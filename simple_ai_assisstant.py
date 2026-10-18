@@ -9,6 +9,8 @@ client = OpenAI(
     api_key=os.getenv("API_KEY")
 )
 
+messages = []
+
 while True:
 
     user_input = input("\nSathwik: ")
@@ -16,14 +18,23 @@ while True:
     if user_input.lower() in ["exit", "quit", "bye", "goodbye"]:
         break
 
+    messages.append(
+        {
+            "role" : "user",
+            "content" : user_input
+        }
+    )
+
     response = client.chat.completions.create(
         model=os.getenv("MODEL"),
-        messages=[
-            {
-                "role": "user",
-                "content": "Hello LLM!"
-            }
-        ]
+        messages=messages
+    )
+
+    messages.append(
+        {
+            "role" : "assisstant",
+            "content" : response.choices[0].message.content
+        }
     )
 
     print("LLM: " + response.choices[0].message.content)
