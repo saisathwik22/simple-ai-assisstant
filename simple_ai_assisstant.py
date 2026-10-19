@@ -1,6 +1,9 @@
 from openai import OpenAI
 import os
 from dotenv import load_dotenv
+from tools import TOOLS, FUNCTION_NAME_TO_FUNCTION_MAP
+import json
+
 
 load_dotenv()
 
@@ -14,7 +17,7 @@ messages = []
 messages.append(
     {
         "role" : "system",
-        "content" : "Act like a very rude agent and always respond under 20 words."
+        "content" : "Act like a very humble agent and always respond under 20 words."
     }
 )
 
@@ -34,15 +37,40 @@ while True:
 
     response = client.chat.completions.create(
         model=os.getenv("MODEL"),
-        messages=messages
+        messages=messages,
+        tools=TOOLS
     )
 
-    messages.append(
-        {
-            "role" : "assisstant",
-            "content" : response.choices[0].message.content
-        }
-    )
+    msg = response.choices[0].message
 
-    print("LLM: " + response.choices[0].message.content)
-    print(response.choices[0].message.role)
+    if msg.tool_calls:
+
+        messages.append(msg) # history added
+
+        for tool_call in msg.tool_calls:
+            func_name = tool_call.function.name
+            func_args = json.loads(tool_call.function.arguments or "{}")
+
+            fn = FUNCTION_NAME_TO_FUNCTION_MAP[func_name]
+            result = fn(**func_args)
+
+            messages.append({
+                "role" : "tool",
+                "tool_call_id" : tool_call.id,
+                "content" : str(result)
+            })
+
+        # 2nd Call to LLM API
+
+        response = client.chat.completions.create(
+            model = os.getenv("MODEL"),
+            messages=messages
+        )
+        msg = response.choices[0].message
+
+    messages.append({
+        "role" : "assisstant",
+        "content" : msg.content
+    })
+
+    print("Assisstant: " + msg.content)
