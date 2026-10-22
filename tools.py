@@ -9,6 +9,9 @@ def get_city_weather(city):
     response = requests.get(url, timeout=10)
     return response.text
 
+def get_user_city():
+    return "Bangalore"
+
 # TOOLS = [ {}, {}, {} ]
 
 TOOLS = [
@@ -35,10 +38,19 @@ TOOLS = [
                 },
             },
         },
+    },
+    {
+        "type" : "function", 
+        "function" : {
+            "name": "get_user_city",
+            "description": "Returns the city where the user lives. Use this when the user says 'my city', 'where I live' or 'my location' without naming the city.",
+            "parameters" : { "type": "object", "properties": {} },
+        }
     }
 ]
 
 FUNCTION_NAME_TO_FUNCTION_MAP = {
     "get_current_time" : get_current_time,
     "get_city_weather" : get_city_weather,
+    "get_user_city" : get_user_city
 }

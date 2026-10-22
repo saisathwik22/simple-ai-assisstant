@@ -35,15 +35,19 @@ while True:
         }
     )
 
-    response = client.chat.completions.create(
-        model=os.getenv("MODEL"),
-        messages=messages,
-        tools=TOOLS
-    )
+    
+    # Chained Tool Calling
+    while True:
+        response = client.chat.completions.create(
+            model=os.getenv("MODEL"),
+            messages=messages,
+            tools=TOOLS
+        )
+        
+        msg = response.choices[0].message
 
-    msg = response.choices[0].message
-
-    if msg.tool_calls:
+        if not msg.tool_calls:
+            break
 
         messages.append(msg) # history added
 
@@ -59,14 +63,6 @@ while True:
                 "tool_call_id" : tool_call.id,
                 "content" : str(result)
             })
-
-        # 2nd Call to LLM API
-
-        response = client.chat.completions.create(
-            model = os.getenv("MODEL"),
-            messages=messages
-        )
-        msg = response.choices[0].message
 
     messages.append({
         "role" : "assisstant",
