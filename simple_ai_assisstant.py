@@ -14,6 +14,8 @@ client = OpenAI(
 
 messages = []
 
+MAX_STEPS = 5
+
 messages.append(
     {
         "role" : "system",
@@ -37,7 +39,7 @@ while True:
 
     
     # Chained Tool Calling
-    while True:
+    for step in range(MAX_STEPS):
         response = client.chat.completions.create(
             model=os.getenv("MODEL"),
             messages=messages,
@@ -53,16 +55,31 @@ while True:
 
         for tool_call in msg.tool_calls:
             func_name = tool_call.function.name
-            func_args = json.loads(tool_call.function.arguments or "{}")
+            func_args = {}
 
-            fn = FUNCTION_NAME_TO_FUNCTION_MAP[func_name]
-            result = fn(**func_args)
+            try:
+                func_args = json.loads(tool_call.function.arguments or "{}")
+                fn = FUNCTION_NAME_TO_FUNCTION_MAP[func_name]
+                result = fn(**func_args)
+            except Exception as e:
+                result = f"Error while running {func_name} : {e}"
 
             messages.append({
                 "role" : "tool",
                 "tool_call_id" : tool_call.id,
                 "content" : str(result)
             })
+
+    else:
+        # Ran out of steps: the model never gave final answer
+        fallback = "Sorry, I could not finish this within the step limit."
+        messages.append({
+            "role": "assisstant",
+            "content": fallback
+        })
+        print("Assisstant: " + fallback)
+        continue
+    
 
     messages.append({
         "role" : "assisstant",
