@@ -20,7 +20,12 @@ MAX_STEPS = 5
 messages.append(
     {
         "role" : "system",
-        "content" : "Act like a very humble agent and always respond under 20 words."
+        "content" : (
+            "You are helpful, humble assisstant. "
+            "Answer general questions (programming, science, advice) from your own knowledge. "
+            "Use a tool ONLY when the user asks for the current time, the weather, or their city. "
+            "Keep answers under 100 words."
+        ),
     }
 )
 
@@ -42,7 +47,7 @@ while True:
     # Chained Tool Calling
     for step in range(MAX_STEPS):
         response = client.chat.completions.create(
-            model=os.getenv("MODEL"),
+            model=os.getenv("MODEL_LARGE"),
             messages=messages,
             tools=TOOLS
         )
