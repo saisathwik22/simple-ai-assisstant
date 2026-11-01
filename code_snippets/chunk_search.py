@@ -2,6 +2,7 @@ import os
 from openai import OpenAI
 from dotenv import load_dotenv
 import numpy
+import json
 
 load_dotenv()
 
@@ -13,6 +14,7 @@ client = OpenAI(
 
 EMBED_MODEL = os.getenv("EMBED_MODEL")
 KB_FOLDER = os.getenv("KB_FOLDER")
+VECTOR_STORE_FILE = os.getenv("VECTOR_STORE_FILE")
 
 
 
@@ -132,9 +134,26 @@ def test(user_query, chunks, top_k=3):
         print(f"    {r['text']}\n")
 
 
+def save_vector_store(chunks):
+    with open(VECTOR_STORE_FILE, "w", encoding="utf-8") as f:
+        json.dump(chunks, f, indent=4)
 
-chunks = create_chunks()
-chunks = add_embeddings(chunks)
+
+def load_vector_store():
+    with open(VECTOR_STORE_FILE, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+chunks = []
+
+if os.path.exists(VECTOR_STORE_FILE):
+    chunks = load_vector_store()
+    print(f"Loaded {len(chunks)} chunks from the vector store file {VECTOR_STORE_FILE}")
+else:
+    chunks = create_chunks()
+    chunks = add_embeddings(chunks)
+    save_vector_store(chunks)
+    print(f"Created and embedded {len(chunks)} chunks and saved to the vector store file {VECTOR_STORE_FILE}")
 
 
 print(f"We have embedded {len(chunks)} chunks from our Knowledge Base")
