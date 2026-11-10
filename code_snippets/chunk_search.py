@@ -69,7 +69,7 @@ def add_embeddings(chunks):
 
 
 # search method to search top k documents for a user query
-def search(query, chunks, top_k = 3):
+def search(query, top_k = 3):
     query_vector = get_embedding(query)
 
     results = []
@@ -110,7 +110,7 @@ def chunk_document(document):
     return chunks
 
 
-
+# loads knowledge base and create chunks from each document
 def create_chunks():
     documents = load_documents()
     chunks = []
@@ -121,9 +121,7 @@ def create_chunks():
     return chunks
 
 
-
-
-
+# testing method
 def test(user_query, chunks, top_k=3):
     print(f"\nUser Query: {user_query}\n")
 
