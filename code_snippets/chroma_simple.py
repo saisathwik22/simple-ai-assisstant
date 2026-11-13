@@ -40,9 +40,25 @@ for s in documents:
     embeddings.append(embedding)
 
 
-chroma = chromadb.Client()
 
-zorvex_collection = chroma.create_collection(
+# chroma = chromadb.Client()
+# zorvex_collection = chroma.create_collection(
+#     name="zorvex_technology",
+#     configuration = {
+#         "hnsw" : {
+#             "space": "cosine"
+#         }
+#     }
+# )
+# zorvex_collection.add(
+#     ids=ids,
+#     documents=documents,
+#     embeddings=embeddings,
+# )
+
+
+chroma = chromadb.PersistentClient(path="./chromadbStorage")
+zorvex_collection = chroma.get_or_create_collection(
     name="zorvex_technology",
     configuration = {
         "hnsw" : {
@@ -51,7 +67,7 @@ zorvex_collection = chroma.create_collection(
     }
 )
 
-zorvex_collection.add(
+zorvex_collection.upsert(
     ids=ids,
     documents=documents,
     embeddings=embeddings,
